@@ -140,7 +140,8 @@ EOF
 IP=$(wget -qO- --no-check-certificate -U Mozilla https://api.ip.sb/geoip | sed -n 's/.*"ip": *"\([^"]*\).*/\1/p')
 green "您的IP为：$IP"
 
-share_link="vless://$UUID@$IP:$port?encryption=none&flow=xtls-rprx-vision&security=reality&sni=$dest_server&fp=chrome&pbk=$public_key&sid=$short_id&type=tcp&headerType=none#32M-Reality"
+share_link="vless://$UUID@$IP:$port?encryption=none&flow=xtls-rprx-vision&security=reality&sni=$dest_server&fp=chrome&pbk=$public_key&sid=$short_id&type=tcp&headerType=none#
+256M-Reality"
 echo ${share_link} > /root/Xray/share-link.txt
 
 cat << EOF > /root/Xray/clash-meta.yaml
@@ -162,7 +163,7 @@ dns:
     fallback-filter: { geoip: true, ipcidr: [240.0.0.0/4, 0.0.0.0/32] }
 
 proxies:
-  - name: 32M-Reality
+  - name: 256M-Reality
     type: vless
     server: $IP
     port: $port
@@ -182,7 +183,7 @@ proxy-groups:
   - name: 🚀 节点选择
     type: select
     proxies:
-      - 32M-Reality
+      - 256M-Reality
       - DIRECT
 
 rules:

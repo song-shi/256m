@@ -17,7 +17,7 @@ yellow() {
 if type apt >/dev/null 2>&1; then
 	export DEBIAN_FRONTEND=noninteractive
 	apt update -qq
-	apt install -y -qq git curl unzip 
+	apt install -y -qq curl unzip 
 fi
 
 

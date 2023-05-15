@@ -140,8 +140,7 @@ EOF
 IP=$(wget -qO- --no-check-certificate -U Mozilla https://api.ip.sb/geoip | sed -n 's/.*"ip": *"\([^"]*\).*/\1/p')
 green "您的IP为：$IP"
 
-share_link="vless://$UUID@$IP:$port?encryption=none&flow=xtls-rprx-vision&security=reality&sni=$dest_server&fp=chrome&pbk=$public_key&sid=$short_id&type=tcp&headerType=none#
-256M-Reality"
+share_link="vless://$UUID@$IP:$port?encryption=none&flow=xtls-rprx-vision&security=reality&sni=$dest_server&fp=chrome&pbk=$public_key&sid=$short_id&type=tcp&headerType=none#256M-Reality"
 echo ${share_link} > /root/Xray/share-link.txt
 
 cat << EOF > /root/Xray/clash-meta.yaml

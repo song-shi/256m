@@ -14,15 +14,22 @@ yellow() {
     echo -e "\033[33m\033[01m$1\033[0m"
 }
 
+if type apt >/dev/null 2>&1; then
+	export DEBIAN_FRONTEND=noninteractive
+	apt update -qq
+	apt install -y -qq git curl unzip 
+fi
+
+
 if [[ -f "/root/Xray/xray" ]]; then
     green "xray文件已存在！"
 else
     echo "开始下载xray文件..."
-    wget https://github.com/XTLS/Xray-core/releases/download/v1.8.1/Xray-linux-32.zip
+    wget https://github.com/XTLS/Xray-core/releases/download/v1.8.1/Xray-linux-64.zip
     cd /root
     mkdir ./Xray
-    unzip -d /root/Xray Xray-linux-32.zip
-    rm Xray-linux-32.zip
+    unzip -d /root/Xray Xray-linux-64.zip
+    rm Xray-linux-64.zip
     cd /root/Xray
     if [[ -f "xray" ]]; then
         green "下载成功！"
@@ -60,8 +67,8 @@ until $sign; do
 done
 
 UUID=$(cat /proc/sys/kernel/random/uuid)
-read -rp "请输入回落域名[默认: www.microsoft.com]: " dest_server
-[[ -z $dest_server ]] && dest_server="www.microsoft.com"
+read -rp "请输入回落域名[默认: code.tecmeet.com]: " dest_server
+[[ -z $dest_server ]] && dest_server="code.tecmeet.com"
 short_id=$(dd bs=4 count=2 if=/dev/urandom | xxd -p -c 8)
 keys=$(/root/Xray/xray x25519)
 private_key=$(echo $keys | awk -F " " '{print $3}')
@@ -189,36 +196,31 @@ echo
 green "reality的分享链接为："
 red $share_link
 
-rm -f /etc/init.d/xray
-cat << EOF > /etc/init.d/xray
-#!/sbin/openrc-run
-name="xray"
-description="Xray Service"
+cat << EOF > /etc/systemd/system/xray.service
+[Unit]
+Description=Xray Service
+Documentation=https://github.com/xtls
+After=network.target nss-lookup.target
 
-command="/root/Xray/xray"
-pidfile="/run/xray.pid"
-command_background="yes"
-rc_ulimit="-n 30000"
-rc_cgroup_cleanup="yes"
+[Service]
+User=root
+LogsDirectory=xray
+CapabilityBoundingSet=CAP_NET_ADMIN CAP_NET_BIND_SERVICE
+AmbientCapabilities=CAP_NET_ADMIN CAP_NET_BIND_SERVICE
+NoNewPrivileges=true
+ExecStart=/root/Xray/xray run -config /root/Xray/config.json
+Restart=on-failure
+RestartPreventExitStatus=23
+LimitNPROC=10000
+LimitNOFILE=1000000
 
-depend() {
-    need net
-    after net
-}
-
-stop() {
-   ebegin "Stopping xray"
-   start-stop-daemon --stop --name xray
-   eend $?
-}
-
+[Install]
+WantedBy=multi-user.target
 EOF
 
-chmod u+x /etc/init.d/xray
-if ! rc-update show | grep xray | grep 'default' > /dev/null;then
-    rc-update add xray default
-fi
-service xray restart
-service xray status
+systemctl enable xray --now
+systemctl daemon-reload
+systemctl restart xray
+systemctl status xray
 
 cd /root
